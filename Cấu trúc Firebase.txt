@@ -1,0 +1,197 @@
+# Cấu trúc Firebase Firestore
+
+## 1. Authentication
+```
+Firebase Auth: email/password
+User: chỉ cần 1 tài khoản duy nhất
+```
+
+## 2. Firestore Collections
+
+### Collection: `materials` (Vật tư)
+```javascript
+{
+  id: "material_id",
+  name: "Chai thủy tinh 500ml",
+  unit: "cái", // đơn vị tính
+  currentStock: 1000, // tồn kho hiện tại
+  unitPrice: 5000, // đơn giá nhập
+  createdAt: timestamp,
+  updatedAt: timestamp
+}
+```
+
+### Collection: `products` (Thành phẩm)
+```javascript
+{
+  id: "product_id",
+  name: "Nước mắm 500ml",
+  currentStock: 50, // tồn kho thành phẩm
+  formula: [ // công thức sản xuất
+    {
+      materialId: "material_id_1",
+      materialName: "Chai thủy tinh 500ml",
+      quantity: 1 // cần 1 chai cho 1 sản phẩm
+    },
+    {
+      materialId: "material_id_2", 
+      materialName: "Tem nhãn",
+      quantity: 1
+    },
+    {
+      materialId: "material_id_3",
+      materialName: "Nước mắm",
+      quantity: 0.5 // 0.5 lít
+    }
+  ],
+  sellingPrice: 25000, // giá bán lẻ
+  createdAt: timestamp,
+  updatedAt: timestamp
+}
+```
+
+### Collection: `material_transactions` (Giao dịch vật tư)
+```javascript
+{
+  id: "transaction_id",
+  materialId: "material_id",
+  materialName: "Chai thủy tinh 500ml",
+  type: "import", // hoặc "export" (xuất khi sản xuất)
+  quantity: 100,
+  unitPrice: 5000,
+  totalAmount: 500000,
+  note: "Nhập hàng từ nhà cung cấp A",
+  createdAt: timestamp,
+  createdBy: "user_id"
+}
+```
+
+### Collection: `production_logs` (Nhật ký sản xuất)
+```javascript
+{
+  id: "production_id",
+  productId: "product_id",
+  productName: "Nước mắm 500ml",
+  quantityProduced: 48, // số lượng sản xuất
+  materialsUsed: [ // vật tư đã sử dụng
+    {
+      materialId: "material_id_1",
+      materialName: "Chai thủy tinh 500ml",
+      quantityUsed: 48,
+      unitPrice: 5000
+    },
+    {
+      materialId: "material_id_2",
+      materialName: "Tem nhãn", 
+      quantityUsed: 48,
+      unitPrice: 1000
+    }
+  ],
+  totalCost: 288000, // tổng chi phí sản xuất
+  costPerUnit: 6000, // chi phí/sản phẩm
+  createdAt: timestamp,
+  createdBy: "user_id"
+}
+```
+
+### Collection: `sales` (Bán hàng)
+```javascript
+{
+  id: "sale_id",
+  productId: "product_id",
+  productName: "Nước mắm 500ml",
+  quantity: 12,
+  unitPrice: 25000, // giá bán
+  totalRevenue: 300000,
+  customerName: "Khách hàng A", // optional
+  customerPhone: "0123456789", // optional
+  note: "Bán lẻ",
+  createdAt: timestamp,
+  createdBy: "user_id"
+}
+```
+
+### Collection: `inventory_snapshots` (Báo cáo tồn kho theo thời điểm)
+```javascript
+{
+  id: "snapshot_id",
+  date: "2024-01-01", // định dạng YYYY-MM-DD
+  materials: [
+    {
+      materialId: "material_id_1",
+      materialName: "Chai thủy tinh 500ml",
+      stock: 1000,
+      value: 5000000 // tồn kho * đơn giá
+    }
+  ],
+  products: [
+    {
+      productId: "product_id_1", 
+      productName: "Nước mắm 500ml",
+      stock: 50,
+      value: 300000 // tồn kho * chi phí sản xuất
+    }
+  ],
+  totalMaterialValue: 10000000,
+  totalProductValue: 500000,
+  createdAt: timestamp
+}
+```
+
+## 3. Firestore Security Rules
+
+### Cơ bản cho 1 user:
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Chỉ cho phép user đã đăng nhập
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}
+```
+
+### Chi tiết hơn:
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Materials
+    match /materials/{materialId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Products  
+    match /products/{productId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Transactions
+    match /material_transactions/{transactionId} {
+      allow read, write: if request.auth != null;
+      allow create: if request.auth != null && 
+        request.resource.data.createdBy == request.auth.uid;
+    }
+    
+    // Production logs
+    match /production_logs/{logId} {
+      allow read, write: if request.auth != null;
+      allow create: if request.auth != null && 
+        request.resource.data.createdBy == request.auth.uid;
+    }
+    
+    // Sales
+    match /sales/{saleId} {
+      allow read, write: if request.auth != null;
+      allow create: if request.auth != null && 
+        request.resource.data.createdBy == request.auth.uid;
+    }
+    
+    // Inventory snapshots
+    match /inventory_snapshots/{snapshotId} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

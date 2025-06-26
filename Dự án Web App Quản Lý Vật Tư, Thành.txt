@@ -1,0 +1,58 @@
+Dự án: Web App Quản Lý Vật Tư, Thành Phẩm và Bán Hàng
+Tech stack: Next.js + Firebase (Firestore, Auth, Hosting)
+UI sử dụng shadcn và tailwinds.css
+
+🎯 Mục tiêu:
+Tạo một ứng dụng web đơn giản để giúp một công ty nhỏ (1 thành viên) quản lý:
+
+Vật tư nhập kho (chai, tem, dầu…)
+
+Đóng gói thành phẩm (theo công thức: 1 thùng = 24 chai + tem + thùng giấy…)
+
+Bán hàng thành phẩm
+
+Tính tồn kho, doanh thu, lợi nhuận
+
+Xem báo cáo theo thời điểm
+
+⚙️ Chức năng chính:
+Đăng nhập
+
+Dùng Firebase Auth (email/password)
+
+Giao diện đơn giản cho 1 người dùng
+
+Quản lý vật tư (materials)
+
+Nhập vật tư: tên, đơn vị, số lượng, đơn giá
+
+Hiển thị tồn kho từng loại vật tư
+
+Quản lý thành phẩm (products)
+
+Tạo công thức sản phẩm từ nhiều vật tư (ví dụ: 1 thùng = 24 chai + 1 thùng giấy)
+
+Quản lý danh sách sản phẩm
+
+Đóng gói (production logs)
+
+Chọn sản phẩm + số lượng cần đóng gói
+
+Hệ thống tự trừ vật tư tương ứng và cộng sản phẩm vào kho
+
+Bán hàng (sales)
+
+Chọn sản phẩm + số lượng + giá bán
+
+Tự trừ tồn kho thành phẩm
+
+Ghi nhận doanh thu
+
+Báo cáo
+
+Tồn kho vật tư / thành phẩm
+
+Tổng doanh thu, lợi nhuận trong khoảng thời gian chọn
+
+Loại hàng bán chạy
+
