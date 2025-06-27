@@ -58,7 +58,7 @@ export default function RegisterPage() {
         formData.password
       );
 
-      router.push('/dashboard'); // Chuyển hướng đến trang dashboard
+      router.push('/'); // Chuyển hướng đến trang dashboard
     } catch (error: any) {
       setError(getErrorMessage(error.code));
     } finally {

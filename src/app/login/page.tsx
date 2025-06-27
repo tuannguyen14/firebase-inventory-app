@@ -20,7 +20,7 @@ export default function LoginPage() {
 
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push('/dashboard'); // Chuyển hướng đến trang dashboard
+      router.push('/'); // Chuyển hướng đến trang dashboard
     } catch (error: any) {
       setError(getErrorMessage(error.code));
     } finally {
@@ -133,14 +133,14 @@ export default function LoginPage() {
               </button>
             </div>
 
-            <div className="text-center">
+            {/* <div className="text-center">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Chưa có tài khoản?{' '}
                 <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300 transition duration-200">
                   Đăng ký ngay
                 </Link>
               </p>
-            </div>
+            </div> */}
           </form>
         </div>
       </div>

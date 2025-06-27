@@ -1,14 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
-import { 
-  Product, 
+import {
+  Product,
   Material,
-  productsUtils, 
-  materialsUtils 
+  productsUtils,
+  materialsUtils
 } from '@/lib/firebase-utils';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,16 +18,17 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  ArrowLeft, 
-  Package, 
-  Plus, 
+import {
+  ArrowLeft,
+  Package,
+  Plus,
   Minus,
   Trash2,
   AlertCircle,
   CheckCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { Suspense } from 'react';
 
 interface FormulaItem {
   materialId: string;
@@ -36,9 +37,11 @@ interface FormulaItem {
   unit: string;
 }
 
-export default function EditProductPage() {
-  const params = useParams();
+function EditProductPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const productId = searchParams.get('id'); // Lấy ID từ query parameter
+
   const [user, loading] = useAuthState(auth);
   const [product, setProduct] = useState<Product | null>(null);
   const [materials, setMaterials] = useState<Material[]>([]);
@@ -62,16 +65,21 @@ export default function EditProductPage() {
   }, [user, loading, router]);
 
   useEffect(() => {
-    if (user && params.id) {
+    if (user && productId) {
       loadData();
+    } else if (user && !productId) {
+      toast.error('Không tìm thấy ID sản phẩm');
+      router.push('/products');
     }
-  }, [user, params.id]);
+  }, [user, productId]);
 
   const loadData = async () => {
+    if (!productId) return;
+
     try {
       setIsLoading(true);
       const [productData, materialsData] = await Promise.all([
-        productsUtils.getById(params.id as string),
+        productsUtils.getById(productId),
         materialsUtils.getAll()
       ]);
 
@@ -146,8 +154,8 @@ export default function EditProductPage() {
 
     setFormData(prev => ({
       ...prev,
-      formula: prev.formula.map(item => 
-        item.materialId === materialId 
+      formula: prev.formula.map(item =>
+        item.materialId === materialId
           ? { ...item, quantity: newQuantity }
           : item
       )
@@ -163,6 +171,8 @@ export default function EditProductPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!productId) return;
 
     if (!formData.name.trim()) {
       toast.error('Vui lòng nhập tên sản phẩm');
@@ -192,8 +202,8 @@ export default function EditProductPage() {
         sellingPrice: formData.sellingPrice
       };
 
-      await productsUtils.update(params.id as string, updates);
-      
+      await productsUtils.update(productId, updates);
+
       toast.success(`Đã cập nhật sản phẩm: ${formData.name}`);
       router.push('/products');
 
@@ -307,7 +317,7 @@ export default function EditProductPage() {
               </CardContent>
             </Card>
 
-            {/* Formula Editor - Similar to new product page */}
+            {/* Formula Editor */}
             <Card>
               <CardHeader>
                 <CardTitle>Chỉnh sửa công thức</CardTitle>
@@ -531,3 +541,13 @@ export default function EditProductPage() {
     </div>
   );
 }
+
+function NewEditProductPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-gray-500">Đang tải trang bán hàng...</div>}>
+      <EditProductPage />
+    </Suspense>
+  );
+}
+
+export default NewEditProductPage

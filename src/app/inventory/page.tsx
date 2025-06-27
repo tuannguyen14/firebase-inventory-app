@@ -45,7 +45,7 @@ interface ProductFormData {
 }
 
 export default function NewProductPage() {
-  const [user, loading, error] = useAuthState(auth);
+  const [user, loading] = useAuthState(auth);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -425,7 +425,7 @@ export default function NewProductPage() {
                   <div className="space-y-3">
                     <h4 className="font-medium">Công thức hiện tại:</h4>
                     <div className="space-y-2">
-                      {formData.formula.map((item, index) => {
+                      {formData.formula.map((item) => {
                         const material = materials.find(m => m.id === item.materialId);
                         const itemCost = material ? material.unitPrice * item.quantity : 0;
 
